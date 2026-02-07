@@ -560,16 +560,16 @@ Look at the picture carefully. Write one sentence that describes what is happeni
       });
     }
 
-    async function addDraftToDB({ text }){
-      const db = await openDB();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, "readwrite");
-        const store = tx.objectStore(STORE);
-        const req = store.add({ text, createdAt: Date.now() });
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      });
-    }
+    async function addDraftToDB({ text, durationSec }){
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, "readwrite");
+    const store = tx.objectStore(STORE);
+    const req = store.add({ text, durationSec, createdAt: Date.now() });
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
 
     async function getAllDraftsFromDB(){
       const db = await openDB();
@@ -703,17 +703,29 @@ Look at the picture carefully. Write one sentence that describes what is happeni
       restoreBtn.className = "linkBtn";
       restoreBtn.textContent = "↩️ Restore";
       restoreBtn.onclick = (e) => {
-        e.preventDefault();
-        writer.disabled = false;
-        writer.value = text || "";
-        saveBtn.disabled = false;
-        resetBtn.disabled = false;
-        startTypingBtn.disabled = true;
+  e.preventDefault();
 
-        syncCurrentDownloadState();
-        setStatus(`Draft ${draftNumber} restored.`);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      };
+  // Put restored content in the box BUT keep typing locked
+  writer.value = text || "";
+  writer.disabled = true;
+
+  // Restore timer where it was when saved (do not start it yet)
+  seconds = Number.isFinite(durationSec) ? durationSec : 0;
+  setTimer(seconds);
+  stopTimer(); // make sure it is not running
+
+  // Force user to click Start typing again
+  startTypingBtn.disabled = false;
+  stopTypingBtn.disabled = true;
+
+  // Allow reset; saving should be disabled until they actually start typing again
+  resetBtn.disabled = false;
+  saveBtn.disabled = true;
+
+  syncCurrentDownloadState();
+  setStatus(`Draft ${draftNumber} restored. Click Start typing to continue.`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
 
       const copyBtn = document.createElement("a");
       copyBtn.href = "#";
@@ -824,20 +836,20 @@ Look at the picture carefully. Write one sentence that describes what is happeni
     });
 
     startTypingBtn.onclick = () => {
-      attemptEnded = false;
+  attemptEnded = false;
 
-      writer.disabled = false;
-      writer.focus();
+  writer.disabled = false;
+  writer.focus();
 
-      startTypingBtn.disabled = true;
-      stopTypingBtn.disabled = false;
+  startTypingBtn.disabled = true;
+  stopTypingBtn.disabled = false;
 
-      resetBtn.disabled = false;
-      saveBtn.disabled = false;
+  resetBtn.disabled = false;
+  saveBtn.disabled = false;   // ✅ now allowed after starting
 
-      setStatus("Typing…");
-      startTimer();
-    };
+  setStatus("Typing…");
+  startTimer();               // ✅ continues from existing 'seconds'
+};
 
     stopTypingBtn.onclick = () => {
       lockAttempt("Stopped. You can save or reset.");
@@ -851,7 +863,7 @@ Look at the picture carefully. Write one sentence that describes what is happeni
       }
       try{
         setStatus("Saving draft…");
-        await addDraftToDB({ text });
+        await addDraftToDB({ text, durationSec: seconds });
         await loadSavedDrafts();
         setStatus("Draft saved on this device.");
         setState("saved");

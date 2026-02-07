@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TOEIC Writing – Write a Sentence Based on a Picture</title>
+
+  <style>
+    :root{
+      /* Rise-like palette */
+      --bg:#f6f7f9;
+      --surface:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+
+      /* Primary */
+      --primary:#2563eb;
+      --primaryHover:#1e4fd6;
+
+      /* Prompt */
+      --accent:#e7f0ff;
+      --accentBorder:#bcd6ff;
+
+      /* Neutrals */
+      --soft:#f1f5f9;
+      --softHover:#e5e7eb;
+
+      /* Status colors */
+      --successBg:#dcfce7;
+      --successText:#166534;
+      --successBorder:#86efac;
+
+      /* Secondary (Return) */
+      --secondaryBg:#f1f5f9;
+      --secondaryText:#1e3a8a;
+      --secondaryBorder:#c7d2fe;
+
+      --shadow:0 10px 26px rgba(17,24,39,.08);
+      --radius:16px;
+      --radiusSm:12px;
+      --focus: 0 0 0 3px rgba(37,99,235,.22);
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      line-height:1.5;
+    }
+
+    .wrap{
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 26px 16px 72px;
+    }
+
+    .header{ margin-bottom: 14px; }
+    .title{
+      margin:0;
+      font-size: 22px;
+      letter-spacing:-0.02em;
+      line-height:1.25;
+    }
+    .subtitle{
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 75ch;
+    }
+
+    .card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .section{ padding: 18px; }
+
+    /* Prompt block (same as speaking tasks) */
+    .prompt{
+      border:1px solid var(--accentBorder);
+      background: linear-gradient(0deg, rgba(231,240,255,.55), rgba(231,240,255,.55)), #fff;
+      border-radius: var(--radius);
+      padding: 14px;
+      position: relative;
+      overflow:hidden;
+    }
+    .prompt::before{
+      content:"";
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width: 6px;
+      background: var(--primary);
+      opacity: .95;
+    }
+    .promptInner{ padding-left: 10px; }
+
+    .promptHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 6px;
+    }
+    .promptTitle{
+      margin:0;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    /* State chip */
+    .state{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border:1px solid rgba(17,24,39,.08);
+      background: rgba(255,255,255,.75);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:#cbd5e1;
+    }
+    .state.saved .dot{ background:#16a34a; }
+
+    .promptInner p{ margin:0; }
+    .promptInner p + p{ margin-top: 6px; }
+
+    .promptText{
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .imgWrap{
+      margin-top: 6px;
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      background:#fff;
+      padding: 8px;
+    }
+    .imgWrap img{
+      width:100%;
+      height:auto;
+      display:block;
+      border-radius: 12px;
+    }
+
+    .wordsLine{
+      margin-top: 6px;
+      padding: 10px;
+      border-radius: var(--radiusSm);
+      border:1px solid rgba(37,99,235,.16);
+      background: rgba(255,255,255,.75);
+      font-size: 13px;
+      color:#1f3b7a;
+    }
+    .wordsLine em{ font-style: italic; }
+
+    /* Panel */
+    .panel{
+      margin-top: 14px;
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      background:#fff;
+    }
+
+    .metaRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between; /* ✅ timer left, status right */
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom: 12px;
+    }
+    .statusLine{
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* Timer chip */
+    .timerChip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background: var(--soft);
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .timer{
+      font-weight: 900;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .02em;
+    }
+
+    /* Buttons */
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    button{
+      border:0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-weight: 750;
+      cursor:pointer;
+      transition: background .15s ease, transform .02s ease, box-shadow .15s ease, opacity .15s ease;
+    }
+    button:active{ transform: translateY(1px); }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+    button:focus-visible{ outline:none; box-shadow: var(--focus); }
+
+    .btnPrimary{ background: var(--primary); color:#fff; }
+    .btnPrimary:hover{ background: var(--primaryHover); }
+
+    .btnNeutral{
+      background: var(--soft);
+      color: #1f2937;
+      border:1px solid #d1d5db;
+    }
+    .btnNeutral:hover{ background: var(--softHover); }
+
+    .btnSuccess{
+      background: var(--successBg);
+      color: var(--successText);
+      border:1px solid var(--successBorder);
+    }
+    .btnSuccess:hover{ background: #bbf7d0; }
+
+    .btnDownload{
+      background:#f8fafc;
+      color:#1f2937;
+      border:1px solid #cbd5e1;
+    }
+    .btnDownload:hover{ background:#eef2f7; }
+
+    .btnReturn{
+      background: var(--secondaryBg);
+      color: var(--secondaryText);
+      border:1px solid var(--secondaryBorder);
+      font-weight: 700;
+    }
+    .btnReturn:hover{ background:#e0e7ff; }
+
+    /* Textarea */
+    textarea{
+      width:100%;
+      min-height: 150px;
+      resize: vertical;
+      margin-top: 10px;
+      padding: 12px;
+      border:1px solid var(--border);
+      border-radius: var(--radiusSm);
+      background:#fff;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.55;
+      outline:none;
+      box-shadow: none;
+    }
+    textarea:focus{
+      border-color: rgba(37,99,235,.45);
+      box-shadow: var(--focus);
+    }
+    textarea:disabled{
+      background:#f8fafc;
+      color:#6b7280;
+    }
+
+    /* Bottom buttons stable */
+    .controlsBottom{
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .controlsBottom button{
+      flex: 0 0 auto;
+    }
+    /* ✅ ONLY CHANGE: push Return button to far bottom-right */
+    .controlsBottom #returnBtn{
+      margin-left:auto;
+    }
+
+    /* Saved drafts */
+    .saved{
+      border-top:1px solid var(--border);
+      padding: 16px 18px 18px;
+      background:#fff;
+    }
+    .savedHead{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    .saved h3{
+      margin:0;
+      font-size: 16px;
+      letter-spacing:-0.01em;
+    }
+    .savedNote{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .savedList{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .savedItem{
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      background:#fff;
+    }
+    .savedTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap:wrap;
+      margin-bottom: 8px;
+    }
+    .savedLabel{
+      display:flex;
+      gap:10px;
+      align-items:baseline;
+      flex-wrap:wrap;
+    }
+    .tag{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .savedActions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .linkBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 9px 12px;
+      border:1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 13px;
+      text-decoration:none;
+      color:#1f2937;
+      background:#f8fafc;
+      cursor:pointer;
+      font-weight: 650;
+    }
+    .linkBtn:hover{ background:#eef2f7; }
+    .dangerLink{
+      border-color:#fecaca;
+      color:#991b1b;
+      background:#fff5f5;
+    }
+    .dangerLink:hover{ background:#ffecec; }
+
+    .draftBox{
+      margin-top: 8px;
+      background:#fafafa;
+      border:1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.55;
+      color:#111827;
+    }
+
+    /* Modal overlay */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(17,24,39,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:9999;
+    }
+    .modal{
+      width:min(520px, 100%);
+      background:#fff;
+      border-radius: var(--radius);
+      border:1px solid var(--border);
+      box-shadow:0 18px 50px rgba(0,0,0,.25);
+      padding:18px;
+    }
+    .modal h3{
+      margin:0 0 8px;
+      font-size:16px;
+      letter-spacing:-0.01em;
+    }
+    .modal p{
+      margin:0 0 12px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.55;
+    }
+    .modal .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    /* Speaking-like danger button */
+    .btnDanger{ background:#ef4444; color:#fff; }
+    .btnDanger:hover{ background:#dc2626; }
+
+    /* Speaking-like ghost button */
+    .btnGhost{
+      background:#f9fafb;
+      color: var(--text);
+      border:1px solid var(--border);
+    }
+    .btnGhost:hover{ background:#f3f4f6; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1 class="title">TOEIC Writing – Write a Sentence Based on a Picture</h1>
+      <p class="subtitle">Look carefully at the picture and write <strong>one complete sentence</strong> about what you see.</p>
+    </div>
+
+    <div class="card">
+      <div class="section">
+        <!-- Prompt -->
+        <section class="prompt" id="promptBox" aria-labelledby="promptTitle">
+          <div class="promptInner">
+            <div class="promptHead">
+              <h2 class="promptTitle" id="promptTitle">Write one sentence</h2>
+              <div class="state" id="stateChip">
+                <span class="dot" aria-hidden="true"></span>
+                <span id="stateText">Ready</span>
+              </div>
+            </div>
+
+            <p class="promptText">
+Look at the picture carefully. Write one sentence that describes what is happening.
+            </p>
+
+            <div class="imgWrap">
+              <img src="Writing-task-1_assets_office.jpg" alt="TOEIC Writing Task 1 picture" />
+            </div>
+
+            <div class="wordsLine">
+              <strong>Words to use:</strong> <em>schedule – discuss</em><br><br>
+              ⚠️You will have <strong>8 minutes</strong> in total for the <strong>5 questions</strong>, allowing approximately <strong>1 minute and 30 seconds</strong> per sentence.
+            </div>
+          </div>
+        </section>
+
+        <!-- Writing panel -->
+        <section class="panel" aria-label="Writing controls">
+          <div class="metaRow">
+            <div class="timerChip"><span class="timer" id="timer">00:00</span></div>
+            <div class="statusLine" id="status">Ready</div>
+          </div>
+
+          <div class="controls">
+            <button id="startTyping" class="btnPrimary">Start typing</button>
+            <button id="stopTyping" class="btnDanger" disabled>Stop</button>
+            <button id="reset" class="btnGhost" disabled>Reset</button>
+            <button id="save" class="btnSuccess" disabled>Save this draft</button>
+          </div>
+
+          <textarea id="writer" placeholder="Type your sentence here..." disabled></textarea>
+
+          <div class="controlsBottom">
+            <button id="download" class="btnDownload" disabled>⬇️ Download current draft</button>
+            <button id="returnBtn" class="btnReturn">↩️ Return to the module</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Saved drafts -->
+      <div class="saved">
+        <div class="savedHead">
+          <h3>Saved drafts</h3>
+          <p class="savedNote">💡 Tip: If you’re using a shared computer, remove your drafts before leaving.</p>
+        </div>
+        <div class="savedList" id="savedList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Return modal -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h3 id="modalTitle">Return to the module</h3>
+      <p>Your browser may block automatic tab closing. Please <strong>close this tab manually</strong> to return to the e-learning module.</p>
+      <div class="row">
+        <button id="okBtn" class="btnPrimary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /***********************
+     * IndexedDB (persist drafts)
+     ***********************/
+    const DB_NAME = "toeic_writing_db_task1";
+    const DB_VERSION = 1;
+    const STORE = "drafts";
+
+    function openDB(){
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if(!db.objectStoreNames.contains(STORE)){
+            const store = db.createObjectStore(STORE, { keyPath: "id", autoIncrement: true });
+            store.createIndex("createdAt", "createdAt");
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function addDraftToDB({ text, durationSec }){
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, "readwrite");
+    const store = tx.objectStore(STORE);
+    const req = store.add({ text, durationSec, createdAt: Date.now() });
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+    async function getAllDraftsFromDB(){
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readonly");
+        const store = tx.objectStore(STORE);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function deleteDraftFromDB(id){
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readwrite");
+        const store = tx.objectStore(STORE);
+        const req = store.delete(id);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    /***********************
+     * UI
+     ***********************/
+    const startTypingBtn = document.getElementById("startTyping");
+    const saveBtn = document.getElementById("save");
+    const resetBtn = document.getElementById("reset");
+    const dlBtn = document.getElementById("download");
+    const returnBtn = document.getElementById("returnBtn");
+    const stopTypingBtn = document.getElementById("stopTyping");
+
+    const writer = document.getElementById("writer");
+    const statusEl = document.getElementById("status");
+    const savedList = document.getElementById("savedList");
+
+    const overlay = document.getElementById("overlay");
+    const okBtn = document.getElementById("okBtn");
+
+    const stateChip = document.getElementById("stateChip");
+    const stateText = document.getElementById("stateText");
+
+    const timerEl = document.getElementById("timer");
+
+    function showOverlay(){ overlay.style.display = "flex"; }
+    function hideOverlay(){ overlay.style.display = "none"; }
+
+    okBtn.addEventListener("click", hideOverlay);
+    overlay.addEventListener("click", (e) => { if(e.target === overlay) hideOverlay(); });
+
+    function setStatus(msg){ statusEl.textContent = msg; }
+
+    function setState(mode){
+      stateChip.classList.remove("saved");
+      if(mode === "saved"){
+        stateChip.classList.add("saved");
+        stateText.textContent = "Saved";
+      } else {
+        stateText.textContent = "Ready";
+      }
+    }
+
+    /***********************
+     * Timer (starts on Start typing)
+     ***********************/
+    let seconds = 0;
+    let timerInterval = null;
+
+    function pad(n){ return String(n).padStart(2,"0"); }
+    function setTimer(sec){
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      timerEl.textContent = `${pad(m)}:${pad(s)}`;
+    }
+    function startTimer(){
+      if(timerInterval) return;
+      timerInterval = setInterval(() => {
+        seconds++;
+        setTimer(seconds);
+      }, 1000);
+    }
+    function stopTimer(){
+      if(timerInterval){
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+    function resetTimer(){
+      stopTimer();
+      seconds = 0;
+      setTimer(0);
+    }
+
+    function downloadText(text, filename){
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 500);
+    }
+
+    function escapeHtml(str){
+      return str
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+
+    function renderSavedDraft({ id, text, createdAt, durationSec }, draftNumber){
+
+  const dur = Number.isFinite(durationSec) ? Math.round(durationSec) : 0;
+  const savedWhen = createdAt ? new Date(createdAt).toLocaleString() : "";
+
+  // ...
+  label.innerHTML =
+    `<strong>Draft ${draftNumber}</strong> ` +
+    `<span class="tag">• ${dur}s • saved ${savedWhen}</span>`;
+
+      const top = document.createElement("div");
+      top.className = "savedTop";
+
+      const label = document.createElement("div");
+      label.className = "savedLabel";
+      label.innerHTML = `<strong>Draft ${draftNumber}</strong> <span class="tag">• saved ${new Date(createdAt).toLocaleString()}</span>`;
+
+      const actions = document.createElement("div");
+      actions.className = "savedActions";
+
+      const restoreBtn = document.createElement("a");
+      restoreBtn.href = "#";
+      restoreBtn.className = "linkBtn";
+      restoreBtn.textContent = "↩️ Restore";
+      restoreBtn.onclick = (e) => {
+  e.preventDefault();
+
+  writer.value = text || "";
+  writer.disabled = true; // force click Start typing to continue
+
+  // ✅ restore timer from THIS draft's saved duration
+  seconds = Number.isFinite(durationSec) ? Math.round(durationSec) : 0;
+  setTimer(seconds);
+
+  startTypingBtn.disabled = false;
+  stopTypingBtn.disabled = true;
+
+  resetBtn.disabled = false;
+  saveBtn.disabled = !(writer.value.trim());
+
+  syncCurrentDownloadState();
+  setStatus(`Draft ${draftNumber} restored. Click Start typing to continue.`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+      const copyBtn = document.createElement("a");
+      copyBtn.href = "#";
+      copyBtn.className = "linkBtn";
+      copyBtn.textContent = "📋 Copy";
+      copyBtn.onclick = async (e) => {
+        e.preventDefault();
+        try{
+          await navigator.clipboard.writeText(text || "");
+          setStatus(`Draft ${draftNumber} copied.`);
+        } catch {
+          setStatus("Copy failed. Please copy manually.");
+        }
+      };
+
+      const downloadBtn = document.createElement("a");
+      downloadBtn.href = "#";
+      downloadBtn.className = "linkBtn";
+      downloadBtn.textContent = "⬇️ Download";
+      downloadBtn.onclick = (e) => {
+        e.preventDefault();
+        downloadText(text || "", `writing-task1-draft-${draftNumber}.txt`);
+        setStatus(`Draft ${draftNumber} downloaded.`);
+      };
+
+      const removeBtn = document.createElement("a");
+      removeBtn.href = "#";
+      removeBtn.className = "linkBtn dangerLink";
+      removeBtn.textContent = "Remove";
+      removeBtn.onclick = async (e) => {
+        e.preventDefault();
+        await deleteDraftFromDB(id);
+        item.remove();
+        setStatus("Draft removed.");
+        await loadSavedDrafts();
+      };
+
+      actions.appendChild(restoreBtn);
+      actions.appendChild(copyBtn);
+      actions.appendChild(downloadBtn);
+      actions.appendChild(removeBtn);
+
+      top.appendChild(label);
+      top.appendChild(actions);
+
+      const box = document.createElement("div");
+      box.className = "draftBox";
+      box.innerHTML = escapeHtml(text || "");
+
+      item.appendChild(top);
+      item.appendChild(box);
+
+      return item;
+    }
+
+    async function loadSavedDrafts(){
+      savedList.innerHTML = "";
+      const drafts = await getAllDraftsFromDB();
+      drafts.sort((a,b) => a.createdAt - b.createdAt);
+
+      if(drafts.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "statusLine";
+        empty.textContent = "No drafts saved yet.";
+        savedList.appendChild(empty);
+        return;
+      }
+
+      drafts.forEach((d, idx) => {
+        savedList.appendChild(renderSavedDraft(d, idx + 1));
+      });
+    }
+
+    function syncCurrentDownloadState(){
+      dlBtn.disabled = !(writer.value.trim());
+    }
+
+    let attemptEnded = false;
+
+    function lockAttempt(message = "Stopped. Start a new attempt."){
+      writer.disabled = true;
+
+      // Don't allow continuing same attempt
+      attemptEnded = true;
+
+      // Buttons like speaking: after stop you can Reset or Save, but not Start
+      startTypingBtn.disabled = true;
+      stopTypingBtn.disabled = true;
+
+      resetBtn.disabled = false;
+      saveBtn.disabled = !(writer.value.trim()); // allow save only if text exists
+      syncCurrentDownloadState();
+
+      setStatus(message);
+      stopTimer();
+    }
+
+    /***********************
+     * Init state
+     ***********************/
+    setTimer(0);
+    setStatus("Ready");
+    setState("ready");
+    loadSavedDrafts().catch(() => {});
+    syncCurrentDownloadState();
+
+    writer.addEventListener("input", () => {
+      syncCurrentDownloadState();
+      setState("ready");
+      // If user somehow typed (shouldn't happen when disabled), keep save enabled
+      saveBtn.disabled = !(writer.value.trim());
+    });
+
+    startTypingBtn.onclick = () => {
+      // starting a brand new attempt
+      attemptEnded = false;
+
+      writer.disabled = false;
+      writer.focus();
+
+      startTypingBtn.disabled = true;
+      stopTypingBtn.disabled = false;
+
+      resetBtn.disabled = false;
+      saveBtn.disabled = false;
+
+      setStatus("Typing…");
+      startTimer();
+    };
+
+    stopTypingBtn.onclick = () => {
+      // End this attempt and lock the draft so it can't be continued
+      lockAttempt("Stopped. You can save or reset.");
+    };
+
+    saveBtn.onclick = async () => {
+  const text = (writer.value || "").trim();
+  if(!text){
+    setStatus("Write your sentence first.");
+    return;
+  }
+  try{
+    setStatus("Saving draft…");
+    await addDraftToDB({ text, durationSec: seconds }); // ✅ store per draft
+    await loadSavedDrafts();
+    setStatus("Draft saved on this device.");
+    setState("saved");
+  } catch(err){
+    console.error(err);
+    setStatus("Save failed (storage blocked?)");
+    alert("Saving failed. Your browser may be blocking storage for this page.");
+  }
+};
+
+    resetBtn.onclick = () => {
+      writer.value = "";
+      writer.disabled = true;
+
+      attemptEnded = false;
+
+      syncCurrentDownloadState();
+      setStatus("Ready");
+      setState("ready");
+
+      resetTimer();
+
+      // Back to initial state
+      startTypingBtn.disabled = false;
+      stopTypingBtn.disabled = true;
+      saveBtn.disabled = true;
+      resetBtn.disabled = true;
+    };
+
+    dlBtn.onclick = () => {
+      const text = (writer.value || "").trim();
+      if(!text) return;
+      downloadText(text, `writing-task1-${new Date().toISOString().slice(0,10)}.txt`);
+      setStatus("Downloaded current draft.");
+    };
+
+    returnBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      setStatus("Returning to the module…");
+      window.close();
+      setTimeout(() => {
+        showOverlay();
+        setStatus("Please close this tab to return to the module.");
+      }, 250);
+    });
+  </script>
+</body>
+</html>

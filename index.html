@@ -302,10 +302,6 @@
     .controlsBottom button{
       flex: 0 0 auto;
     }
-    /* ✅ ONLY CHANGE: push Return button to far bottom-right */
-    .controlsBottom #returnBtn{
-      margin-left:auto;
-    }
 
     /* Saved drafts */
     .saved{
@@ -436,16 +432,16 @@
       justify-content:flex-end;
     }
     /* Speaking-like danger button */
-    .btnDanger{ background:#ef4444; color:#fff; }
-    .btnDanger:hover{ background:#dc2626; }
+.btnDanger{ background:#ef4444; color:#fff; }
+.btnDanger:hover{ background:#dc2626; }
 
-    /* Speaking-like ghost button */
-    .btnGhost{
-      background:#f9fafb;
-      color: var(--text);
-      border:1px solid var(--border);
-    }
-    .btnGhost:hover{ background:#f3f4f6; }
+/* Speaking-like ghost button (optional, if you want Reset to look like speaking) */
+.btnGhost{
+  background:#f9fafb;
+  color: var(--text);
+  border:1px solid var(--border);
+}
+.btnGhost:hover{ background:#f3f4f6; }
   </style>
 </head>
 
@@ -492,11 +488,11 @@ Look at the picture carefully. Write one sentence that describes what is happeni
           </div>
 
           <div class="controls">
-            <button id="startTyping" class="btnPrimary">Start typing</button>
-            <button id="stopTyping" class="btnDanger" disabled>Stop</button>
-            <button id="reset" class="btnGhost" disabled>Reset</button>
-            <button id="save" class="btnSuccess" disabled>Save this draft</button>
-          </div>
+  <button id="startTyping" class="btnPrimary">Start typing</button>
+  <button id="stopTyping" class="btnDanger" disabled>Stop</button>
+  <button id="reset" class="btnGhost" disabled>Reset</button>
+  <button id="save" class="btnSuccess" disabled>Save this draft</button>
+</div>
 
           <textarea id="writer" placeholder="Type your sentence here..." disabled></textarea>
 
@@ -552,16 +548,16 @@ Look at the picture carefully. Write one sentence that describes what is happeni
       });
     }
 
-    async function addDraftToDB({ text, durationSec }){
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, "readwrite");
-    const store = tx.objectStore(STORE);
-    const req = store.add({ text, durationSec, createdAt: Date.now() });
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
+    async function addDraftToDB({ text }){
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readwrite");
+        const store = tx.objectStore(STORE);
+        const req = store.add({ text, createdAt: Date.now() });
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
 
     async function getAllDraftsFromDB(){
       const db = await openDB();
@@ -675,15 +671,10 @@ Look at the picture carefully. Write one sentence that describes what is happeni
         .replaceAll(">","&gt;");
     }
 
-    function renderSavedDraft({ id, text, createdAt, durationSec }, draftNumber){
-
-  const dur = Number.isFinite(durationSec) ? Math.round(durationSec) : 0;
-  const savedWhen = createdAt ? new Date(createdAt).toLocaleString() : "";
-
-  // ...
-  label.innerHTML =
-    `<strong>Draft ${draftNumber}</strong> ` +
-    `<span class="tag">• ${dur}s • saved ${savedWhen}</span>`;
+    function renderSavedDraft({ id, text, createdAt }, draftNumber){
+      const item = document.createElement("div");
+      item.className = "savedItem";
+      item.dataset.id = String(id);
 
       const top = document.createElement("div");
       top.className = "savedTop";
@@ -700,25 +691,18 @@ Look at the picture carefully. Write one sentence that describes what is happeni
       restoreBtn.className = "linkBtn";
       restoreBtn.textContent = "↩️ Restore";
       restoreBtn.onclick = (e) => {
-  e.preventDefault();
+        e.preventDefault();
+        // restore also unlocks typing (so user can edit immediately)
+        writer.disabled = false;
+        writer.value = text || "";
+        saveBtn.disabled = false;
+        resetBtn.disabled = false;
+        startTypingBtn.disabled = true;
 
-  writer.value = text || "";
-  writer.disabled = true; // force click Start typing to continue
-
-  // ✅ restore timer from THIS draft's saved duration
-  seconds = Number.isFinite(durationSec) ? Math.round(durationSec) : 0;
-  setTimer(seconds);
-
-  startTypingBtn.disabled = false;
-  stopTypingBtn.disabled = true;
-
-  resetBtn.disabled = false;
-  saveBtn.disabled = !(writer.value.trim());
-
-  syncCurrentDownloadState();
-  setStatus(`Draft ${draftNumber} restored. Click Start typing to continue.`);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
+        syncCurrentDownloadState();
+        setStatus(`Draft ${draftNumber} restored.`);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
 
       const copyBtn = document.createElement("a");
       copyBtn.href = "#";
@@ -798,23 +782,23 @@ Look at the picture carefully. Write one sentence that describes what is happeni
 
     let attemptEnded = false;
 
-    function lockAttempt(message = "Stopped. Start a new attempt."){
-      writer.disabled = true;
+function lockAttempt(message = "Stopped. Start a new attempt."){
+  writer.disabled = true;
 
-      // Don't allow continuing same attempt
-      attemptEnded = true;
+  // Don't allow continuing same attempt
+  attemptEnded = true;
 
-      // Buttons like speaking: after stop you can Reset or Save, but not Start
-      startTypingBtn.disabled = true;
-      stopTypingBtn.disabled = true;
+  // Buttons like speaking: after stop you can Reset or Save, but not Start
+  startTypingBtn.disabled = true;
+  stopTypingBtn.disabled = true;
 
-      resetBtn.disabled = false;
-      saveBtn.disabled = !(writer.value.trim()); // allow save only if text exists
-      syncCurrentDownloadState();
+  resetBtn.disabled = false;
+  saveBtn.disabled = !(writer.value.trim()); // allow save only if text exists
+  syncCurrentDownloadState();
 
-      setStatus(message);
-      stopTimer();
-    }
+  setStatus(message);
+  stopTimer();
+}
 
     /***********************
      * Init state
@@ -826,71 +810,71 @@ Look at the picture carefully. Write one sentence that describes what is happeni
     syncCurrentDownloadState();
 
     writer.addEventListener("input", () => {
-      syncCurrentDownloadState();
-      setState("ready");
-      // If user somehow typed (shouldn't happen when disabled), keep save enabled
-      saveBtn.disabled = !(writer.value.trim());
-    });
+  syncCurrentDownloadState();
+  setState("ready");
+  // If user somehow typed (shouldn't happen when disabled), keep save enabled
+  saveBtn.disabled = !(writer.value.trim());
+});
 
     startTypingBtn.onclick = () => {
-      // starting a brand new attempt
-      attemptEnded = false;
+  // starting a brand new attempt
+  attemptEnded = false;
 
-      writer.disabled = false;
-      writer.focus();
+  writer.disabled = false;
+  writer.focus();
 
-      startTypingBtn.disabled = true;
-      stopTypingBtn.disabled = false;
+  startTypingBtn.disabled = true;
+  stopTypingBtn.disabled = false;
 
-      resetBtn.disabled = false;
-      saveBtn.disabled = false;
+  resetBtn.disabled = false;
+  saveBtn.disabled = false;
 
-      setStatus("Typing…");
-      startTimer();
-    };
-
-    stopTypingBtn.onclick = () => {
-      // End this attempt and lock the draft so it can't be continued
-      lockAttempt("Stopped. You can save or reset.");
-    };
-
-    saveBtn.onclick = async () => {
-  const text = (writer.value || "").trim();
-  if(!text){
-    setStatus("Write your sentence first.");
-    return;
-  }
-  try{
-    setStatus("Saving draft…");
-    await addDraftToDB({ text, durationSec: seconds }); // ✅ store per draft
-    await loadSavedDrafts();
-    setStatus("Draft saved on this device.");
-    setState("saved");
-  } catch(err){
-    console.error(err);
-    setStatus("Save failed (storage blocked?)");
-    alert("Saving failed. Your browser may be blocking storage for this page.");
-  }
+  setStatus("Typing…");
+  startTimer();
 };
 
-    resetBtn.onclick = () => {
-      writer.value = "";
-      writer.disabled = true;
+    stopTypingBtn.onclick = () => {
+  // End this attempt and lock the draft so it can't be continued
+  lockAttempt("Stopped. You can save or reset.");
+};
 
-      attemptEnded = false;
-
-      syncCurrentDownloadState();
-      setStatus("Ready");
-      setState("ready");
-
-      resetTimer();
-
-      // Back to initial state
-      startTypingBtn.disabled = false;
-      stopTypingBtn.disabled = true;
-      saveBtn.disabled = true;
-      resetBtn.disabled = true;
+    saveBtn.onclick = async () => {
+      const text = (writer.value || "").trim();
+      if(!text){
+        setStatus("Write your sentence first.");
+        return;
+      }
+      try{
+        setStatus("Saving draft…");
+        await addDraftToDB({ text });
+        await loadSavedDrafts();
+        setStatus("Draft saved on this device.");
+        setState("saved");
+      } catch(err){
+        console.error(err);
+        setStatus("Save failed (storage blocked?)");
+        alert("Saving failed. Your browser may be blocking storage for this page.");
+      }
     };
+
+    resetBtn.onclick = () => {
+  writer.value = "";
+  writer.disabled = true;
+
+  attemptEnded = false;
+
+  syncCurrentDownloadState();
+  setStatus("Ready");
+  setState("ready");
+
+  resetTimer();
+
+  // Back to initial state
+  startTypingBtn.disabled = false;
+  stopTypingBtn.disabled = true;
+  saveBtn.disabled = true;
+  resetBtn.disabled = true;
+};
 
     dlBtn.onclick = () => {
       const text = (writer.value || "").trim();
@@ -911,3 +895,5 @@ Look at the picture carefully. Write one sentence that describes what is happeni
   </script>
 </body>
 </html>
+
+

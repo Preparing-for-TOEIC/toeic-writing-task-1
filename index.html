@@ -7,31 +7,25 @@
 
   <style>
     :root{
-      /* Rise-like palette */
       --bg:#f6f7f9;
       --surface:#ffffff;
       --text:#111827;
       --muted:#6b7280;
       --border:#e5e7eb;
 
-      /* Primary */
       --primary:#2563eb;
       --primaryHover:#1e4fd6;
 
-      /* Prompt */
       --accent:#e7f0ff;
       --accentBorder:#bcd6ff;
 
-      /* Neutrals */
       --soft:#f1f5f9;
       --softHover:#e5e7eb;
 
-      /* Status colors */
       --successBg:#dcfce7;
       --successText:#166534;
       --successBorder:#86efac;
 
-      /* Secondary (Return) */
       --secondaryBg:#f1f5f9;
       --secondaryText:#1e3a8a;
       --secondaryBorder:#c7d2fe;
@@ -82,7 +76,6 @@
 
     .section{ padding: 18px; }
 
-    /* Prompt block (same as speaking tasks) */
     .prompt{
       border:1px solid var(--accentBorder);
       background: linear-gradient(0deg, rgba(231,240,255,.55), rgba(231,240,255,.55)), #fff;
@@ -118,7 +111,6 @@
       align-items:center;
     }
 
-    /* State chip */
     .state{
       display:inline-flex;
       align-items:center;
@@ -172,7 +164,6 @@
     }
     .wordsLine em{ font-style: italic; }
 
-    /* Panel */
     .panel{
       margin-top: 14px;
       border:1px solid var(--border);
@@ -184,7 +175,7 @@
     .metaRow{
       display:flex;
       align-items:center;
-      justify-content:space-between; /* ✅ timer left, status right */
+      justify-content:space-between;
       gap:10px;
       flex-wrap:wrap;
       margin-bottom: 12px;
@@ -194,7 +185,6 @@
       font-size: 13px;
     }
 
-    /* Timer chip */
     .timerChip{
       display:inline-flex;
       align-items:center;
@@ -213,7 +203,6 @@
       letter-spacing: .02em;
     }
 
-    /* Buttons */
     .controls{
       display:flex;
       gap:10px;
@@ -237,12 +226,8 @@
     .btnPrimary{ background: var(--primary); color:#fff; }
     .btnPrimary:hover{ background: var(--primaryHover); }
 
-    .btnNeutral{
-      background: var(--soft);
-      color: #1f2937;
-      border:1px solid #d1d5db;
-    }
-    .btnNeutral:hover{ background: var(--softHover); }
+    .btnDanger{ background:#ef4444; color:#fff; }
+    .btnDanger:hover{ background:#dc2626; }
 
     .btnSuccess{
       background: var(--successBg);
@@ -266,7 +251,13 @@
     }
     .btnReturn:hover{ background:#e0e7ff; }
 
-    /* Textarea */
+    .btnGhost{
+      background:#f9fafb;
+      color: var(--text);
+      border:1px solid var(--border);
+    }
+    .btnGhost:hover{ background:#f3f4f6; }
+
     textarea{
       width:100%;
       min-height: 150px;
@@ -291,23 +282,12 @@
       color:#6b7280;
     }
 
-    /* Bottom buttons stable */
     .controlsBottom{
       margin-top:10px;
       display:flex;
       gap:10px;
       flex-wrap:wrap;
       align-items:center;
-    }
-    .controlsBottom button{
-      flex: 0 0 auto;
-    }
-
-    /* ✅ NEW: Card footer pinned bottom-right (same idea as your speaking task) */
-    .cardFooter{
-      display:flex;
-      justify-content:flex-end;
-      padding: 0 18px 14px;
     }
 
     /* Saved drafts */
@@ -402,7 +382,13 @@
       color:#111827;
     }
 
-    /* Modal overlay */
+    /* Return pinned bottom-right */
+    .cardFooter{
+      display:flex;
+      justify-content:flex-end;
+      padding: 0 18px 14px;
+    }
+
     .overlay{
       position:fixed;
       inset:0;
@@ -438,17 +424,6 @@
       flex-wrap:wrap;
       justify-content:flex-end;
     }
-    /* Speaking-like danger button */
-    .btnDanger{ background:#ef4444; color:#fff; }
-    .btnDanger:hover{ background:#dc2626; }
-
-    /* Speaking-like ghost button (optional, if you want Reset to look like speaking) */
-    .btnGhost{
-      background:#f9fafb;
-      color: var(--text);
-      border:1px solid var(--border);
-    }
-    .btnGhost:hover{ background:#f3f4f6; }
   </style>
 </head>
 
@@ -461,7 +436,6 @@
 
     <div class="card">
       <div class="section">
-        <!-- Prompt -->
         <section class="prompt" id="promptBox" aria-labelledby="promptTitle">
           <div class="promptInner">
             <div class="promptHead">
@@ -472,9 +446,7 @@
               </div>
             </div>
 
-            <p class="promptText">
-Look at the picture carefully. Write one sentence that describes what is happening.
-            </p>
+            <p class="promptText">Look at the picture carefully. Write one sentence that describes what is happening.</p>
 
             <div class="imgWrap">
               <img src="Writing-task-1_assets_office.jpg" alt="TOEIC Writing Task 1 picture" />
@@ -487,7 +459,6 @@ Look at the picture carefully. Write one sentence that describes what is happeni
           </div>
         </section>
 
-        <!-- Writing panel -->
         <section class="panel" aria-label="Writing controls">
           <div class="metaRow">
             <div class="timerChip"><span class="timer" id="timer">00:00</span></div>
@@ -505,12 +476,10 @@ Look at the picture carefully. Write one sentence that describes what is happeni
 
           <div class="controlsBottom">
             <button id="download" class="btnDownload" disabled>⬇️ Download current draft</button>
-            <!-- ✅ Return button removed from here -->
           </div>
         </section>
       </div>
 
-      <!-- Saved drafts -->
       <div class="saved">
         <div class="savedHead">
           <h3>Saved drafts</h3>
@@ -519,14 +488,12 @@ Look at the picture carefully. Write one sentence that describes what is happeni
         <div class="savedList" id="savedList"></div>
       </div>
 
-      <!-- ✅ NEW: Return button pinned at the very bottom-right of the card -->
       <div class="cardFooter">
         <button id="returnBtn" class="btnReturn">↩️ Return to the module</button>
       </div>
     </div>
   </div>
 
-  <!-- Return modal -->
   <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <h3 id="modalTitle">Return to the module</h3>
@@ -542,7 +509,7 @@ Look at the picture carefully. Write one sentence that describes what is happeni
      * IndexedDB (persist drafts)
      ***********************/
     const DB_NAME = "toeic_writing_db_task1";
-    const DB_VERSION = 1;
+    const DB_VERSION = 2; // bump version safely
     const STORE = "drafts";
 
     function openDB(){
@@ -561,15 +528,15 @@ Look at the picture carefully. Write one sentence that describes what is happeni
     }
 
     async function addDraftToDB({ text, durationSec }){
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, "readwrite");
-    const store = tx.objectStore(STORE);
-    const req = store.add({ text, durationSec, createdAt: Date.now() });
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readwrite");
+        const store = tx.objectStore(STORE);
+        const req = store.add({ text, durationSec, createdAt: Date.now() });
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
 
     async function getAllDraftsFromDB(){
       const db = await openDB();
@@ -597,23 +564,23 @@ Look at the picture carefully. Write one sentence that describes what is happeni
      * UI
      ***********************/
     const startTypingBtn = document.getElementById("startTyping");
-    const saveBtn = document.getElementById("save");
-    const resetBtn = document.getElementById("reset");
-    const dlBtn = document.getElementById("download");
-    const returnBtn = document.getElementById("returnBtn");
-    const stopTypingBtn = document.getElementById("stopTyping");
+    const stopTypingBtn  = document.getElementById("stopTyping");
+    const resetBtn       = document.getElementById("reset");
+    const saveBtn        = document.getElementById("save");
+    const dlBtn          = document.getElementById("download");
+    const returnBtn      = document.getElementById("returnBtn");
 
-    const writer = document.getElementById("writer");
+    const writer   = document.getElementById("writer");
     const statusEl = document.getElementById("status");
-    const savedList = document.getElementById("savedList");
+    const savedList= document.getElementById("savedList");
 
-    const overlay = document.getElementById("overlay");
-    const okBtn = document.getElementById("okBtn");
+    const overlay  = document.getElementById("overlay");
+    const okBtn    = document.getElementById("okBtn");
 
     const stateChip = document.getElementById("stateChip");
     const stateText = document.getElementById("stateText");
 
-    const timerEl = document.getElementById("timer");
+    const timerEl  = document.getElementById("timer");
 
     function showOverlay(){ overlay.style.display = "flex"; }
     function hideOverlay(){ overlay.style.display = "none"; }
@@ -634,7 +601,7 @@ Look at the picture carefully. Write one sentence that describes what is happeni
     }
 
     /***********************
-     * Timer (starts on Start typing)
+     * Timer
      ***********************/
     let seconds = 0;
     let timerInterval = null;
@@ -677,13 +644,53 @@ Look at the picture carefully. Write one sentence that describes what is happeni
     }
 
     function escapeHtml(str){
-      return str
+      return (str || "")
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;");
     }
 
-    function renderSavedDraft({ id, text, createdAt }, draftNumber){
+    function fmtDuration(sec){
+      const n = Number(sec);
+      if(!Number.isFinite(n) || n < 0) return "0s";
+      return `${Math.round(n)}s`;
+    }
+
+    function syncCurrentDownloadState(){
+      dlBtn.disabled = !(writer.value.trim());
+    }
+
+    function lockAttempt(message){
+      writer.disabled = true;
+      startTypingBtn.disabled = true;
+      stopTypingBtn.disabled = true;
+
+      resetBtn.disabled = false;
+      saveBtn.disabled = !(writer.value.trim());
+
+      syncCurrentDownloadState();
+      setStatus(message);
+      stopTimer();
+    }
+
+    function resetToInitial(){
+      writer.value = "";
+      writer.disabled = true;
+
+      setState("ready");
+      setStatus("Ready");
+
+      resetTimer();
+
+      startTypingBtn.disabled = false;
+      stopTypingBtn.disabled = true;
+      saveBtn.disabled = true;
+      resetBtn.disabled = true;
+
+      syncCurrentDownloadState();
+    }
+
+    function renderSavedDraft({ id, text, createdAt, durationSec }, draftNumber){
       const item = document.createElement("div");
       item.className = "savedItem";
       item.dataset.id = String(id);
@@ -693,7 +700,9 @@ Look at the picture carefully. Write one sentence that describes what is happeni
 
       const label = document.createElement("div");
       label.className = "savedLabel";
-      label.innerHTML = `<strong>Draft ${draftNumber}</strong> <span class="tag">• saved ${new Date(createdAt).toLocaleString()}</span>`;
+      label.innerHTML =
+        `<strong>Draft ${draftNumber}</strong> ` +
+        `<span class="tag">• ${fmtDuration(durationSec)} • saved ${new Date(createdAt).toLocaleString()}</span>`;
 
       const actions = document.createElement("div");
       actions.className = "savedActions";
@@ -703,29 +712,30 @@ Look at the picture carefully. Write one sentence that describes what is happeni
       restoreBtn.className = "linkBtn";
       restoreBtn.textContent = "↩️ Restore";
       restoreBtn.onclick = (e) => {
-  e.preventDefault();
+        e.preventDefault();
 
-  // Put restored content in the box BUT keep typing locked
-  writer.value = text || "";
-  writer.disabled = true;
+        // Load text but keep typing locked until Start typing
+        writer.value = text || "";
+        writer.disabled = true;
 
-  // Restore timer where it was when saved (do not start it yet)
-  seconds = Number.isFinite(durationSec) ? durationSec : 0;
-  setTimer(seconds);
-  stopTimer(); // make sure it is not running
+        // Restore timer to saved value (do NOT start yet)
+        seconds = Number.isFinite(Number(durationSec)) ? Number(durationSec) : 0;
+        setTimer(seconds);
+        stopTimer();
 
-  // Force user to click Start typing again
-  startTypingBtn.disabled = false;
-  stopTypingBtn.disabled = true;
+        // Force Start typing
+        startTypingBtn.disabled = false;
+        stopTypingBtn.disabled = true;
 
-  // Allow reset; saving should be disabled until they actually start typing again
-  resetBtn.disabled = false;
-  saveBtn.disabled = true;
+        // Allow reset; saving only after they restart typing
+        resetBtn.disabled = false;
+        saveBtn.disabled = true;
 
-  syncCurrentDownloadState();
-  setStatus(`Draft ${draftNumber} restored. Click Start typing to continue.`);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
+        syncCurrentDownloadState();
+        setState("ready");
+        setStatus(`Draft ${draftNumber} restored. Click Start typing to continue.`);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
 
       const copyBtn = document.createElement("a");
       copyBtn.href = "#";
@@ -773,7 +783,7 @@ Look at the picture carefully. Write one sentence that describes what is happeni
 
       const box = document.createElement("div");
       box.className = "draftBox";
-      box.innerHTML = escapeHtml(text || "");
+      box.innerHTML = escapeHtml(text);
 
       item.appendChild(top);
       item.appendChild(box);
@@ -784,7 +794,7 @@ Look at the picture carefully. Write one sentence that describes what is happeni
     async function loadSavedDrafts(){
       savedList.innerHTML = "";
       const drafts = await getAllDraftsFromDB();
-      drafts.sort((a,b) => a.createdAt - b.createdAt);
+      drafts.sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0));
 
       if(drafts.length === 0){
         const empty = document.createElement("div");
@@ -794,62 +804,41 @@ Look at the picture carefully. Write one sentence that describes what is happeni
         return;
       }
 
-      drafts.forEach((d, idx) => {
-        savedList.appendChild(renderSavedDraft(d, idx + 1));
-      });
-    }
-
-    function syncCurrentDownloadState(){
-      dlBtn.disabled = !(writer.value.trim());
-    }
-
-    let attemptEnded = false;
-
-    function lockAttempt(message = "Stopped. Start a new attempt."){
-      writer.disabled = true;
-      attemptEnded = true;
-
-      startTypingBtn.disabled = true;
-      stopTypingBtn.disabled = true;
-
-      resetBtn.disabled = false;
-      saveBtn.disabled = !(writer.value.trim());
-      syncCurrentDownloadState();
-
-      setStatus(message);
-      stopTimer();
+      drafts.forEach((d, idx) => savedList.appendChild(renderSavedDraft(d, idx + 1)));
     }
 
     /***********************
-     * Init state
+     * Events
      ***********************/
     setTimer(0);
     setStatus("Ready");
     setState("ready");
-    loadSavedDrafts().catch(() => {});
     syncCurrentDownloadState();
+
+    loadSavedDrafts().catch(() => {});
 
     writer.addEventListener("input", () => {
       syncCurrentDownloadState();
       setState("ready");
-      saveBtn.disabled = !(writer.value.trim());
+      // Save only makes sense while typing
+      if(!writer.disabled){
+        saveBtn.disabled = !(writer.value.trim());
+      }
     });
 
     startTypingBtn.onclick = () => {
-  attemptEnded = false;
+      writer.disabled = false;
+      writer.focus();
 
-  writer.disabled = false;
-  writer.focus();
+      startTypingBtn.disabled = true;
+      stopTypingBtn.disabled = false;
 
-  startTypingBtn.disabled = true;
-  stopTypingBtn.disabled = false;
+      resetBtn.disabled = false;
+      saveBtn.disabled = false;
 
-  resetBtn.disabled = false;
-  saveBtn.disabled = false;   // ✅ now allowed after starting
-
-  setStatus("Typing…");
-  startTimer();               // ✅ continues from existing 'seconds'
-};
+      setStatus("Typing…");
+      startTimer(); // continues from current 'seconds'
+    };
 
     stopTypingBtn.onclick = () => {
       lockAttempt("Stopped. You can save or reset.");
@@ -874,23 +863,7 @@ Look at the picture carefully. Write one sentence that describes what is happeni
       }
     };
 
-    resetBtn.onclick = () => {
-      writer.value = "";
-      writer.disabled = true;
-
-      attemptEnded = false;
-
-      syncCurrentDownloadState();
-      setStatus("Ready");
-      setState("ready");
-
-      resetTimer();
-
-      startTypingBtn.disabled = false;
-      stopTypingBtn.disabled = true;
-      saveBtn.disabled = true;
-      resetBtn.disabled = true;
-    };
+    resetBtn.onclick = () => resetToInitial();
 
     dlBtn.onclick = () => {
       const text = (writer.value || "").trim();

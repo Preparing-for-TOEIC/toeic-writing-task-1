@@ -303,6 +303,13 @@
       flex: 0 0 auto;
     }
 
+    /* ✅ NEW: Card footer pinned bottom-right (same idea as your speaking task) */
+    .cardFooter{
+      display:flex;
+      justify-content:flex-end;
+      padding: 0 18px 14px;
+    }
+
     /* Saved drafts */
     .saved{
       border-top:1px solid var(--border);
@@ -432,16 +439,16 @@
       justify-content:flex-end;
     }
     /* Speaking-like danger button */
-.btnDanger{ background:#ef4444; color:#fff; }
-.btnDanger:hover{ background:#dc2626; }
+    .btnDanger{ background:#ef4444; color:#fff; }
+    .btnDanger:hover{ background:#dc2626; }
 
-/* Speaking-like ghost button (optional, if you want Reset to look like speaking) */
-.btnGhost{
-  background:#f9fafb;
-  color: var(--text);
-  border:1px solid var(--border);
-}
-.btnGhost:hover{ background:#f3f4f6; }
+    /* Speaking-like ghost button (optional, if you want Reset to look like speaking) */
+    .btnGhost{
+      background:#f9fafb;
+      color: var(--text);
+      border:1px solid var(--border);
+    }
+    .btnGhost:hover{ background:#f3f4f6; }
   </style>
 </head>
 
@@ -488,17 +495,17 @@ Look at the picture carefully. Write one sentence that describes what is happeni
           </div>
 
           <div class="controls">
-  <button id="startTyping" class="btnPrimary">Start typing</button>
-  <button id="stopTyping" class="btnDanger" disabled>Stop</button>
-  <button id="reset" class="btnGhost" disabled>Reset</button>
-  <button id="save" class="btnSuccess" disabled>Save this draft</button>
-</div>
+            <button id="startTyping" class="btnPrimary">Start typing</button>
+            <button id="stopTyping" class="btnDanger" disabled>Stop</button>
+            <button id="reset" class="btnGhost" disabled>Reset</button>
+            <button id="save" class="btnSuccess" disabled>Save this draft</button>
+          </div>
 
           <textarea id="writer" placeholder="Type your sentence here..." disabled></textarea>
 
           <div class="controlsBottom">
             <button id="download" class="btnDownload" disabled>⬇️ Download current draft</button>
-            <button id="returnBtn" class="btnReturn">↩️ Return to the module</button>
+            <!-- ✅ Return button removed from here -->
           </div>
         </section>
       </div>
@@ -510,6 +517,11 @@ Look at the picture carefully. Write one sentence that describes what is happeni
           <p class="savedNote">💡 Tip: If you’re using a shared computer, remove your drafts before leaving.</p>
         </div>
         <div class="savedList" id="savedList"></div>
+      </div>
+
+      <!-- ✅ NEW: Return button pinned at the very bottom-right of the card -->
+      <div class="cardFooter">
+        <button id="returnBtn" class="btnReturn">↩️ Return to the module</button>
       </div>
     </div>
   </div>
@@ -692,7 +704,6 @@ Look at the picture carefully. Write one sentence that describes what is happeni
       restoreBtn.textContent = "↩️ Restore";
       restoreBtn.onclick = (e) => {
         e.preventDefault();
-        // restore also unlocks typing (so user can edit immediately)
         writer.disabled = false;
         writer.value = text || "";
         saveBtn.disabled = false;
@@ -782,23 +793,20 @@ Look at the picture carefully. Write one sentence that describes what is happeni
 
     let attemptEnded = false;
 
-function lockAttempt(message = "Stopped. Start a new attempt."){
-  writer.disabled = true;
+    function lockAttempt(message = "Stopped. Start a new attempt."){
+      writer.disabled = true;
+      attemptEnded = true;
 
-  // Don't allow continuing same attempt
-  attemptEnded = true;
+      startTypingBtn.disabled = true;
+      stopTypingBtn.disabled = true;
 
-  // Buttons like speaking: after stop you can Reset or Save, but not Start
-  startTypingBtn.disabled = true;
-  stopTypingBtn.disabled = true;
+      resetBtn.disabled = false;
+      saveBtn.disabled = !(writer.value.trim());
+      syncCurrentDownloadState();
 
-  resetBtn.disabled = false;
-  saveBtn.disabled = !(writer.value.trim()); // allow save only if text exists
-  syncCurrentDownloadState();
-
-  setStatus(message);
-  stopTimer();
-}
+      setStatus(message);
+      stopTimer();
+    }
 
     /***********************
      * Init state
@@ -810,33 +818,30 @@ function lockAttempt(message = "Stopped. Start a new attempt."){
     syncCurrentDownloadState();
 
     writer.addEventListener("input", () => {
-  syncCurrentDownloadState();
-  setState("ready");
-  // If user somehow typed (shouldn't happen when disabled), keep save enabled
-  saveBtn.disabled = !(writer.value.trim());
-});
+      syncCurrentDownloadState();
+      setState("ready");
+      saveBtn.disabled = !(writer.value.trim());
+    });
 
     startTypingBtn.onclick = () => {
-  // starting a brand new attempt
-  attemptEnded = false;
+      attemptEnded = false;
 
-  writer.disabled = false;
-  writer.focus();
+      writer.disabled = false;
+      writer.focus();
 
-  startTypingBtn.disabled = true;
-  stopTypingBtn.disabled = false;
+      startTypingBtn.disabled = true;
+      stopTypingBtn.disabled = false;
 
-  resetBtn.disabled = false;
-  saveBtn.disabled = false;
+      resetBtn.disabled = false;
+      saveBtn.disabled = false;
 
-  setStatus("Typing…");
-  startTimer();
-};
+      setStatus("Typing…");
+      startTimer();
+    };
 
     stopTypingBtn.onclick = () => {
-  // End this attempt and lock the draft so it can't be continued
-  lockAttempt("Stopped. You can save or reset.");
-};
+      lockAttempt("Stopped. You can save or reset.");
+    };
 
     saveBtn.onclick = async () => {
       const text = (writer.value || "").trim();
@@ -858,23 +863,22 @@ function lockAttempt(message = "Stopped. Start a new attempt."){
     };
 
     resetBtn.onclick = () => {
-  writer.value = "";
-  writer.disabled = true;
+      writer.value = "";
+      writer.disabled = true;
 
-  attemptEnded = false;
+      attemptEnded = false;
 
-  syncCurrentDownloadState();
-  setStatus("Ready");
-  setState("ready");
+      syncCurrentDownloadState();
+      setStatus("Ready");
+      setState("ready");
 
-  resetTimer();
+      resetTimer();
 
-  // Back to initial state
-  startTypingBtn.disabled = false;
-  stopTypingBtn.disabled = true;
-  saveBtn.disabled = true;
-  resetBtn.disabled = true;
-};
+      startTypingBtn.disabled = false;
+      stopTypingBtn.disabled = true;
+      saveBtn.disabled = true;
+      resetBtn.disabled = true;
+    };
 
     dlBtn.onclick = () => {
       const text = (writer.value || "").trim();
@@ -895,5 +899,3 @@ function lockAttempt(message = "Stopped. Start a new attempt."){
   </script>
 </body>
 </html>
-
-
